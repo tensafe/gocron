@@ -72,13 +72,13 @@ func (model *BaseModel) pageLimitOffset() int {
 
 // 创建Db
 func CreateDb() *xorm.Engine {
+	engineName := NormalizeDbEngine(app.Setting.Db.Engine)
 	dsn := getDbEngineDSN(app.Setting)
-	engine, err := xorm.NewEngine(app.Setting.Db.Engine, dsn)
+	engine, err := xorm.NewEngine(engineName, dsn)
 	if err != nil {
 		logger.Fatal("创建xorm引擎失败", err)
 	}
-	engine.SetMaxIdleConns(app.Setting.Db.MaxIdleConns)
-	engine.SetMaxOpenConns(app.Setting.Db.MaxOpenConns)
+	setDbPool(engine, engineName, app.Setting)
 	engine.SetConnMaxLifetime(dbMaxLiftTime)
 
 	if app.Setting.Db.Prefix != "" {
@@ -100,14 +100,15 @@ func CreateDb() *xorm.Engine {
 
 // 创建临时数据库连接
 func CreateTmpDb(setting *setting.Setting) (*xorm.Engine, error) {
+	engineName := NormalizeDbEngine(setting.Db.Engine)
 	dsn := getDbEngineDSN(setting)
 
-	return xorm.NewEngine(setting.Db.Engine, dsn)
+	return xorm.NewEngine(engineName, dsn)
 }
 
 // 获取数据库引擎DSN  mysql,sqlite,postgres
 func getDbEngineDSN(setting *setting.Setting) string {
-	engine := strings.ToLower(setting.Db.Engine)
+	engine := NormalizeDbEngine(setting.Db.Engine)
 	dsn := ""
 	switch engine {
 	case "mysql":
@@ -125,9 +126,31 @@ func getDbEngineDSN(setting *setting.Setting) string {
 			setting.Db.Host,
 			setting.Db.Port,
 			setting.Db.Database)
+	case "sqlite3":
+		dsn = strings.TrimSpace(setting.Db.Database)
 	}
 
 	return dsn
+}
+
+func NormalizeDbEngine(engine string) string {
+	engine = strings.ToLower(strings.TrimSpace(engine))
+	if engine == "sqlite" {
+		return "sqlite3"
+	}
+
+	return engine
+}
+
+func setDbPool(engine *xorm.Engine, engineName string, setting *setting.Setting) {
+	if engineName == "sqlite3" {
+		engine.SetMaxIdleConns(1)
+		engine.SetMaxOpenConns(1)
+		return
+	}
+
+	engine.SetMaxIdleConns(setting.Db.MaxIdleConns)
+	engine.SetMaxOpenConns(setting.Db.MaxOpenConns)
 }
 
 func keepDbAlived(engine *xorm.Engine) {

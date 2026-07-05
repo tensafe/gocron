@@ -21,18 +21,18 @@ require (
 	github.com/klauspost/compress v1.5.0 // indirect
 	github.com/klauspost/cpuid v1.2.1 // indirect
 	github.com/lib/pq v1.1.1
+	github.com/mattn/go-sqlite3 v1.14.16 // indirect
 	github.com/ouqiang/goutil v1.1.1
 	github.com/rakyll/statik v0.1.6
 	github.com/sirupsen/logrus v1.4.2
 	github.com/urfave/cli v1.20.0
-	golang.org/x/crypto v0.0.0-20190530122614-20be4c3c3ed5 // indirect
-	golang.org/x/net v0.0.0-20190522155817-f3200d17e092
-	golang.org/x/sync v0.0.0-20181108010431-42b317875d0f // indirect
-	golang.org/x/text v0.3.2 // indirect
+	golang.org/x/net v0.0.0-20201021035429-f5854403a974
 	google.golang.org/genproto v0.0.0-20190530194941-fb225487d101 // indirect
 	google.golang.org/grpc v1.21.0
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df // indirect
 	gopkg.in/ini.v1 v1.42.0
 	gopkg.in/macaron.v1 v1.3.2
+	modernc.org/sqlite v1.14.8
+	modernc.org/tcl v1.15.2 // indirect
 )

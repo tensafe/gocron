@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"strings"
 
 	macaron "gopkg.in/macaron.v1"
 
@@ -20,12 +21,12 @@ import (
 // 系统安装
 
 type InstallForm struct {
-	DbType               string `binding:"In(mysql,postgres)"`
-	DbHost               string `binding:"Required;MaxSize(50)"`
-	DbPort               int    `binding:"Required;Range(1,65535)"`
-	DbUsername           string `binding:"Required;MaxSize(50)"`
-	DbPassword           string `binding:"Required;MaxSize(30)"`
-	DbName               string `binding:"Required;MaxSize(50)"`
+	DbType               string `binding:"In(mysql,postgres,sqlite,sqlite3)"`
+	DbHost               string `binding:"MaxSize(50)"`
+	DbPort               int
+	DbUsername           string `binding:"MaxSize(50)"`
+	DbPassword           string `binding:"MaxSize(30)"`
+	DbName               string `binding:"Required;MaxSize(255)"`
 	DbTablePrefix        string `binding:"MaxSize(20)"`
 	AdminUsername        string `binding:"Required;MinSize(3)"`
 	AdminPassword        string `binding:"Required;MinSize(6)"`
@@ -51,7 +52,12 @@ func Store(ctx *macaron.Context, form InstallForm) string {
 	if form.AdminPassword != form.ConfirmAdminPassword {
 		return json.CommonFailure("两次输入密码不匹配")
 	}
-	err := testDbConnection(form)
+	form.DbType = models.NormalizeDbEngine(form.DbType)
+	err := validateDbConfig(form)
+	if err != nil {
+		return json.CommonFailure(err.Error())
+	}
+	err = testDbConnection(form)
 	if err != nil {
 		return json.CommonFailure(err.Error())
 	}
@@ -99,6 +105,13 @@ func Store(ctx *macaron.Context, form InstallForm) string {
 
 // 配置写入文件
 func writeConfig(form InstallForm) error {
+	maxIdleConns := "5"
+	maxOpenConns := "100"
+	if form.DbType == "sqlite3" {
+		maxIdleConns = "1"
+		maxOpenConns = "1"
+	}
+
 	dbConfig := []string{
 		"db.engine", form.DbType,
 		"db.host", form.DbHost,
@@ -108,8 +121,8 @@ func writeConfig(form InstallForm) error {
 		"db.database", form.DbName,
 		"db.prefix", form.DbTablePrefix,
 		"db.charset", "utf8",
-		"db.max.idle.conns", "5",
-		"db.max.open.conns", "100",
+		"db.max.idle.conns", maxIdleConns,
+		"db.max.open.conns", maxOpenConns,
 		"allow_ips", "",
 		"app.name", "定时任务管理系统", // 应用名称
 		"api.key", "",
@@ -140,7 +153,7 @@ func createAdminUser(form InstallForm) error {
 // 测试数据库连接
 func testDbConnection(form InstallForm) error {
 	var s setting.Setting
-	s.Db.Engine = form.DbType
+	s.Db.Engine = models.NormalizeDbEngine(form.DbType)
 	s.Db.Host = form.DbHost
 	s.Db.Port = form.DbPort
 	s.Db.User = form.DbUsername
@@ -171,4 +184,30 @@ func testDbConnection(form InstallForm) error {
 
 	return err
 
+}
+
+func validateDbConfig(form InstallForm) error {
+	switch form.DbType {
+	case "mysql", "postgres":
+		if strings.TrimSpace(form.DbHost) == "" {
+			return errors.New("请输入数据库主机名")
+		}
+		if form.DbPort < 1 || form.DbPort > 65535 {
+			return errors.New("请输入正确的数据库端口")
+		}
+		if strings.TrimSpace(form.DbUsername) == "" {
+			return errors.New("请输入数据库用户名")
+		}
+		if strings.TrimSpace(form.DbPassword) == "" {
+			return errors.New("请输入数据库密码")
+		}
+	case "sqlite3":
+		if strings.TrimSpace(form.DbName) == "" {
+			return errors.New("请输入SQLite数据库文件路径")
+		}
+	default:
+		return errors.New("不支持的数据库类型")
+	}
+
+	return nil
 }
