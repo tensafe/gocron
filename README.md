@@ -1,7 +1,7 @@
 # gocron - 定时任务管理系统
-[![Downloads](https://img.shields.io/github/downloads/ouqiang/gocron/total.svg)](https://github.com/ouqiang/gocron/releases)
-[![license](https://img.shields.io/github/license/mashape/apistatus.svg?maxAge=2592000)](https://github.com/ouqiang/gocron/blob/master/LICENSE)
-[![Release](https://img.shields.io/github/release/ouqiang/gocron.svg?label=Release)](https://github.com/ouqiang/gocron/releases)
+[![Downloads](https://img.shields.io/github/downloads/tensafe/gocron/total.svg)](https://github.com/tensafe/gocron/releases)
+[![license](https://img.shields.io/github/license/mashape/apistatus.svg?maxAge=2592000)](https://github.com/tensafe/gocron/blob/main/LICENSE)
+[![Release](https://img.shields.io/github/release/tensafe/gocron.svg?label=Release)](https://github.com/tensafe/gocron/releases)
 
 # 项目简介
 使用Go语言开发的轻量级定时任务集中调度和管理系统, 用于替代Linux-crontab [查看文档](https://github.com/ouqiang/gocron/wiki)
@@ -24,19 +24,19 @@
 * 任务执行结果通知, 支持邮件、Slack、Webhook
 
 ### 截图
-![流程图](https://raw.githubusercontent.com/ouqiang/gocron/master/assets/screenshot/scheduler.png)
-![任务](https://raw.githubusercontent.com/ouqiang/gocron/master/assets/screenshot/task.png)
-![Slack](https://raw.githubusercontent.com/ouqiang/gocron/master/assets/screenshot/notification.png)
+![流程图](https://raw.githubusercontent.com/tensafe/gocron/main/assets/screenshot/scheduler.png)
+![任务](https://raw.githubusercontent.com/tensafe/gocron/main/assets/screenshot/task.png)
+![Slack](https://raw.githubusercontent.com/tensafe/gocron/main/assets/screenshot/notification.png)
     
 ### 支持平台
 > Windows、Linux、Mac OS
 
 ### 环境要求
->  MySQL
+> MySQL、PostgreSQL、SQLite
 
 
 ## 下载
-[releases](https://github.com/ouqiang/gocron/releases)  
+[releases](https://github.com/tensafe/gocron/releases)
 
 [版本升级](https://github.com/ouqiang/gocron/wiki/版本升级)
 
@@ -133,9 +133,15 @@ docker run --name gocron --link mysql:db -p 5920:5920 -d ouqg/gocron
 * RPC框架 [gRPC](https://github.com/grpc/grpc)
 
 ## 反馈
-提交[issue](https://github.com/ouqiang/gocron/issues/new)
+请提交 [Issue](https://github.com/tensafe/gocron/issues/new)。
 
-## ChangeLog
+## 更新日志
+
+main
+--------
+* 支持SQLite数据库, 使用纯Go驱动, 构建无需CGO
+* 安装页新增SQLite选项, SQLite模式下只需填写数据库文件路径
+* 新增GitHub Actions自动编译多平台二进制, tag构建会发布到GitHub Release
 
 v1.5
 --------
